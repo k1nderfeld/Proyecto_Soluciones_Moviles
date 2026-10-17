@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon",
     "start": "node src/server.js",
-    "migrate": "npx sequelize-cli db:migrate",
+    "migrate": "node src/database/initialize.js",
     "test": "node --test test/*.test.js"
   },
   "author": "Jose Benitez",
@@ -21,9 +21,11 @@
     "nodemon": "^3.1.14",
     "sequelize": "^6.37.8",
     "sequelize-cli": "^6.6.5",
-    "sqlite3": "^6.0.1"
-  },
-  "devDependencies": {
+    "sqlite3": "^6.0.1",
     "morgan": "^1.12.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=22"
   }
 }

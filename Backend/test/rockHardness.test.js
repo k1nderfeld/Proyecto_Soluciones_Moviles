@@ -32,7 +32,7 @@ test('GET /api/rock/dureza returns only rocks inside the range, limits included'
   const app = await bootTestApp('hardness')
   t.after(() => app.close())
   const token = await app.adminToken()
-  const base = { composition: 'x', formula: 'x', environment: 'x', commonUses: 'x', streak: 'x', color: 'x', texture: 'x', density: 2, transparency: 0, tenacity: 1, imgUrl: 'https://example.org/x.jpg', mindatUrl: 'https://www.mindat.org/', typeId: 1, categoryId: 1 }
+  const base = { description: 'Roca de prueba', composition: 'x', formula: 'x', environment: 'x', commonUses: 'x', streak: 'x', color: 'x', texture: 'x', density: 2, transparency: 0, tenacity: 1, imgUrl: 'https://example.org/x.jpg', mindatUrl: 'https://www.mindat.org/', typeId: 1, categoryId: 1 }
   for (const hardness of [2, 5, 7, 9]) {
     const created = await app.request('POST', '/api/rock', { token, body: { ...base, index: 500 + hardness, name: `H${hardness}`, scientificName: `Hardite ${hardness}`, hardness } })
     assert.equal(created.status, 201)

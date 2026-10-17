@@ -4,6 +4,7 @@ const models = require('./models')
 const { sequelize } = models
 const { seedDemoData } = require('./database/seedDemoData')
 const { seedAdminUser } = require('./database/seedAdmin')
+const { jwtSecret } = require('./config/auth')
 const PORT = process.env.PORT || 8080
 
 // Reference data first (the Admin role must exist), then the administrator account.
@@ -14,6 +15,7 @@ const seedAll = async modelSet => {
 
 const start = async ({ database = sequelize, modelSet = models, seed = seedAll, appFactory = createApp, port = PORT, logger = console } = {}) => {
   try {
+    jwtSecret()
     await database.authenticate()
     await database.sync()
     await seed(modelSet)

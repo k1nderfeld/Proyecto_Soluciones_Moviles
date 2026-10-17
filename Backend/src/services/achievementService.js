@@ -20,7 +20,7 @@ const createAchievementService = ({ models }) => ({
     const owned = new Set((await UnlockModel.findAll({ where, transaction })).map(row => row.achievementId))
     const unlocked = []
     for (const achievement of candidates) {
-      if (owned.has(achievement.id) || stats[achievement.conditionType] < achievement.conditionValue) continue
+      if (owned.has(achievement.id) || !Number.isInteger(achievement.conditionValue) || achievement.conditionValue < 1 || stats[achievement.conditionType] === undefined || stats[achievement.conditionType] < achievement.conditionValue) continue
       const unlockedAt = new Date()
       await UnlockModel.create({ ...where, achievementId: achievement.id, unlockedAt }, { transaction })
       unlocked.push({ id: achievement.id, slug: achievement.slug, name: achievement.name, experience: achievement.experience, unlockedAt })

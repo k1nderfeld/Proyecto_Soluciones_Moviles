@@ -7,6 +7,7 @@ const ADMIN = { email: 'admin.test@example.test', password: 'AdminPass123!' }
 // Call this before requiring anything else from src/: DATABASE_NAME is read when the config module loads.
 async function bootTestApp(label) {
   process.env.NODE_ENV = 'test'
+  process.env.ALLOW_SIMULATED_RECOGNITION = 'true'
   process.env.DATABASE_NAME = `test_${label}_${process.pid}_${Date.now()}`
   const models = require('../../src/models')
   const { createApp } = require('../../src/app')

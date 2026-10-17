@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken')
 const models = require('../models')
+const { jwtSecret } = require('../config/auth')
 
 const UNAUTHORIZED = 'No estás autorizado para ingresar a esta función.'
 
@@ -13,7 +14,7 @@ const authenticate = ({ required }) => async (req, res, next) => {
   if (scheme !== 'Bearer' || !token) return res.status(401).json({ message: UNAUTHORIZED })
 
   try {
-    const { id } = jwt.verify(token, process.env.JWT_SECRET || 'dev-secret-change-me')
+    const { id } = jwt.verify(token, jwtSecret(), { algorithms: ['HS256'] })
     const user = await models.User.findByPk(id, { include: [{ model: models.Role, as: 'role' }] })
     if (!user || user.status !== 'active') return res.status(401).json({ message: 'Usuario no autorizado, contacte soporte.' })
     req.user = user

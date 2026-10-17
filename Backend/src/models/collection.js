@@ -36,6 +36,12 @@ Collection.init({
     tableName: 'collection',
     timestamps: true,
     paranoid: true,
+    validate: {
+        hasOneOwner() {
+            if ((this.userId == null) === (this.guestSessionId == null)) throw new Error('Collection needs exactly one owner')
+            if (!Number.isInteger(this.recognitionCount) || this.recognitionCount < 1) throw new Error('recognitionCount debe ser un entero positivo')
+        }
+    },
     indexes: [
         { unique: true, fields: ['userId', 'rockId'] },
         { unique: true, fields: ['guestSessionId', 'rockId'] }

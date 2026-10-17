@@ -3,9 +3,9 @@ const { HttpError } = require('../utils/httpError')
 
 // `filterFields`: query parameters matched exactly (e.g. ?typeId=2). `beforeRemove(item)` may throw an HttpError to veto a delete.
 const createCrudService = ({ model, searchableFields = [], allowedFields = null, keyFields = null, filterFields = [], beforeRemove = null }) => {
-  const sanitize = data => {
+  const sanitize = (data, creating = false) => {
     const input = { ...data }
-    for (const field of ['id', ...(keyFields || []), 'createdAt', 'updatedAt', 'deletedAt']) delete input[field]
+    for (const field of ['id', ...(creating ? [] : (keyFields || [])), 'createdAt', 'updatedAt', 'deletedAt']) delete input[field]
     if (allowedFields) return Object.fromEntries(Object.entries(input).filter(([key]) => allowedFields.includes(key)))
     return input
   }
@@ -31,7 +31,7 @@ const createCrudService = ({ model, searchableFields = [], allowedFields = null,
       return { items: result.rows, total: result.count, page: Number(query.page || 1), limit: options.limit }
     },
     find: findByKey,
-    create(data) { return model.create(sanitize(data)) },
+    create(data) { return model.create(sanitize(data, true)) },
     async update(key, data) {
       const item = await findByKey(key)
       if (!item) return null

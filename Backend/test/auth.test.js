@@ -7,7 +7,7 @@ test.before(async () => { app = await bootTestApp('auth') })
 test.after(async () => { await app.close() })
 
 const validRock = suffix => ({
-  index: 900 + suffix, name: `Rock ${suffix}`, scientificName: `Testite ${suffix}`, composition: 'Quartz', formula: 'SiO2', environment: 'Lab',
+  index: 900 + suffix, name: `Rock ${suffix}`, scientificName: `Testite ${suffix}`, description: 'Roca de prueba', composition: 'Quartz', formula: 'SiO2', environment: 'Lab',
   commonUses: 'Testing', hardness: 5, streak: 'White', color: 'Grey', texture: 'Fine', density: 2.5, transparency: 0, tenacity: 1,
   imgUrl: 'https://example.org/x.jpg', mindatUrl: 'https://www.mindat.org/', typeId: 1, categoryId: 1
 })

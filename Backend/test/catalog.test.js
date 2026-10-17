@@ -3,7 +3,7 @@ const assert = require('node:assert/strict')
 const { bootTestApp } = require('./helpers/testApp')
 
 const rockBody = overrides => ({
-  index: 700, name: 'Catalog rock', scientificName: 'Catalogite', composition: 'x', formula: 'x', environment: 'x', commonUses: 'x', hardness: 5,
+  index: 700, name: 'Catalog rock', scientificName: 'Catalogite', description: 'Roca de prueba', composition: 'x', formula: 'x', environment: 'x', commonUses: 'x', hardness: 5,
   streak: 'x', color: 'x', texture: 'x', density: 2, transparency: 0, tenacity: 1, imgUrl: 'https://example.org/x.jpg', mindatUrl: 'https://www.mindat.org/',
   typeId: 1, categoryId: 1, ...overrides
 })

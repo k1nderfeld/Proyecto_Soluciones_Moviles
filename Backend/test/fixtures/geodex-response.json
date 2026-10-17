@@ -1,0 +1,68 @@
+{
+  "success": true,
+  "request_id": null,
+  "model": {
+    "name": "gpt-5.6-luna",
+    "provider": "openai"
+  },
+  "input": {
+    "image": {
+      "source": "url",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/0/08/BasaltUSGOV.jpg"
+    },
+    "observations": {},
+    "ignored_observations": {}
+  },
+  "result": {
+    "label": "Basalto",
+    "confidence": 72.0,
+    "score": 72.0,
+    "confidence_level": "medium",
+    "specimen_id": null,
+    "dex_number": null,
+    "scientific_name": null,
+    "catalog_match": true
+  },
+  "predictions": [
+    {
+      "label": "Basalto",
+      "scientific_name": null,
+      "confidence": 72.0,
+      "reasoning": "Dark overall color and apparently fine-grained texture are more typical of basalt than granite.",
+      "observation_matches": [],
+      "observation_conflicts": [],
+      "catalog_match": true,
+      "specimen_id": null,
+      "dex_number": null,
+      "catalog": {
+        "scientificName": "Basalt",
+        "rockId": 1
+      },
+      "score": 72.0
+    },
+    {
+      "label": "Granito",
+      "scientific_name": null,
+      "confidence": 28.0,
+      "reasoning": "Granite is possible, but the specimen does not show the lighter color or clearly visible coarse quartz and feldspar crystals usually expected.",
+      "observation_matches": [],
+      "observation_conflicts": [],
+      "catalog_match": true,
+      "specimen_id": null,
+      "dex_number": null,
+      "catalog": {
+        "scientificName": "Granite",
+        "rockId": 2
+      },
+      "score": 28.0
+    }
+  ],
+  "notes": "The specimen appears to be a dark, fine-grained igneous rock. The image favors basalt over granite, though the texture is somewhat indistinct.",
+  "warnings": [
+    "This is an experimental visual identification API. Confirm important identifications with physical observation or laboratory analysis."
+  ],
+  "limitations": [
+    "Identification comes from a general-purpose vision model and a single photo; it can be wrong.",
+    "Results are grounded on the GeoDex catalog when candidates are available, not on laboratory analysis."
+  ]
+}

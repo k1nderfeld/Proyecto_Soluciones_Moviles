@@ -51,7 +51,12 @@ Achievement.init({
     modelName: 'Achievement',
     tableName: 'achievement',
     timestamps: true,
-    paranoid: true
+    paranoid: true,
+    validate: {
+        completeCondition() {
+            if ((this.conditionType == null) !== (this.conditionValue == null)) throw new Error('conditionType y conditionValue deben definirse juntos')
+        }
+    }
 })
 
 Achievement.associate = (models) => {

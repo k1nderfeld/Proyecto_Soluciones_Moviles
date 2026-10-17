@@ -14,6 +14,7 @@ const referenceData = {
     { name: 'Estudiante' },
     { name: 'Docente' },
     { name: 'Admin' },
+    { name: 'Usuario no autenticado' },
     { name: 'Usuario autenticado' }
   ],
   Achievement: [

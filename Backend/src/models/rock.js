@@ -50,7 +50,8 @@ Rock.init({
     },
     description: {
         type: DataTypes.STRING,
-        allowNull: true,
+        allowNull: false,
+        validate: { notEmpty: true }
     },
     composition: {
         type: DataTypes.STRING,

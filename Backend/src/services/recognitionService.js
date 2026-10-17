@@ -1,7 +1,8 @@
 const { HttpError } = require('../utils/httpError')
+const { Transaction } = require('sequelize')
+const { createGeodexService } = require('./geodexService')
 
-// The recognition model is integrated later through an external API. Until then the client (or a test) sends the model's
-// JSON result: { rockId, confidence (0-100), imageUrl?, note? }. This service does not classify images.
+// Only trusted model output, or explicitly enabled local demo input, reaches persistence.
 const parseModelResult = (body = {}) => {
   const rockId = typeof body.rockId === 'number' || typeof body.rockId === 'string' ? Number(body.rockId) : NaN
   if (!Number.isInteger(rockId) || rockId < 1) throw new HttpError(400, 'rockId es obligatorio y debe ser un entero positivo')
@@ -17,15 +18,25 @@ const createRecognitionService = ({ models, sequelize, guestSessions, achievemen
   // `actor` is { kind: 'user', id } or { kind: 'guest', id }. Everything happens in one transaction so a failed step
   // (for example the guest limit) never leaves a half-recorded recognition behind.
   async recognize(actor, body) {
-    const input = parseModelResult(body)
+    if (!body || typeof body !== 'object' || Array.isArray(body)) throw new HttpError(400, 'Se requiere un objeto JSON')
+    if (body.note !== undefined && (typeof body.note !== 'string' || body.note.length > 255)) throw new HttpError(400, 'note debe ser un texto de hasta 255 caracteres')
+    if (actor.kind === 'guest') {
+      const current = await models.GuestSession.findByPk(actor.id)
+      if (!current || current.status !== 'active' || current.expiresAt <= new Date()) throw new HttpError(401, 'La sesión de invitado ya no está activa')
+      if (current.recognitionCount >= guestSessions.limit) throw new HttpError(403, 'Alcanzaste el límite de reconocimientos. Crea una cuenta para continuar.', 'GUEST_LIMIT_REACHED')
+    }
+    if (!body.image && (process.env.ALLOW_SIMULATED_RECOGNITION !== 'true' || process.env.NODE_ENV === 'production')) throw new HttpError(400, 'Envía image.url o image.base64 para reconocer una roca')
+    const input = parseModelResult(body.image ? await createGeodexService({ models }).identify(body) : body)
     const rock = await models.Rock.findByPk(input.rockId)
     if (!rock) throw new HttpError(404, 'Roca no encontrada')
     const ownerWhere = actor.kind === 'user' ? { userId: actor.id } : { guestSessionId: actor.id }
 
-    return sequelize.transaction(async transaction => {
+    return sequelize.transaction({ type: Transaction.TYPES.IMMEDIATE }, async transaction => {
+      if (!await models.Rock.findByPk(rock.id, { transaction })) throw new HttpError(404, 'Roca no encontrada')
       let session = null
       if (actor.kind === 'guest') {
         session = await models.GuestSession.findByPk(actor.id, { transaction })
+        if (!session || session.status !== 'active' || session.expiresAt <= new Date()) throw new HttpError(401, 'La sesión de invitado ya no está activa')
         if (session.recognitionCount >= guestSessions.limit) {
           throw new HttpError(403, `Alcanzaste el límite de ${guestSessions.limit} reconocimientos para invitados. Crea una cuenta para continuar.`, 'GUEST_LIMIT_REACHED')
         }
@@ -34,7 +45,8 @@ const createRecognitionService = ({ models, sequelize, guestSessions, achievemen
 
       const analysis = await models.Analysis.create({ ...ownerWhere, rockId: rock.id, image_url: input.imageUrl, confidence: input.confidence, result: rock.name, note: input.note }, { transaction })
 
-      let entry = await models.Collection.findOne({ where: { ...ownerWhere, rockId: rock.id }, transaction })
+      let entry = await models.Collection.findOne({ where: { ...ownerWhere, rockId: rock.id }, transaction, paranoid: false })
+      if (entry?.deletedAt) await entry.restore({ transaction })
       const newDiscovery = !entry
       if (entry) await entry.update({ recognitionCount: entry.recognitionCount + 1 }, { transaction })
       else entry = await models.Collection.create({ ...ownerWhere, rockId: rock.id, firstDiscoveredAt: new Date(), recognitionCount: 1 }, { transaction })
