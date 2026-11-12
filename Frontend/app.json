@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "RocaDex",
+    "slug": "rocas-catedra-ii",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "rocas",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "cl.catedra.rocas"
+    },
+    "android": {
+      "package": "cl.catedra.rocas",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Permite que RocaDex use la cámara para reconocer una roca.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permite que RocaDex acceda a tus fotos para reconocer una roca."
+        }
+      ],
+      "expo-font"
+    ],
+    "extra": {
+      "router": {}
+    }
+  }
+}
