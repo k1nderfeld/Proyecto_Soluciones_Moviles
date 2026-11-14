@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken')
 const User = require('../models/user')
+const RevokedToken = require('../models/revokedToken')
 const HttpError = require('../utils/HttpError')
 
 const authenticate = async (req, res, next) => {
@@ -16,6 +17,20 @@ const authenticate = async (req, res, next) => {
         } catch (error) {
             throw new HttpError(401, 'Tu sesión es inválida o expiró')
         }
+
+        if (payload.scope === '2fa') {
+            throw new HttpError(401, 'Tu sesión es inválida o expiró')
+        }
+
+        if (payload.jti) {
+            const revoked = await RevokedToken.findOne({ where: { jti: payload.jti } })
+
+            if (revoked) {
+                throw new HttpError(401, 'Tu sesión es inválida o expiró')
+            }
+        }
+
+        req.token = payload
 
         if (payload.role === 'invitado') {
             req.user = null

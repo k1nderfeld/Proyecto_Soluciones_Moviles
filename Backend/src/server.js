@@ -5,6 +5,7 @@ require('dotenv').config()
 
 const db = require('./config/database')
 const User = require('./models/user')
+const RevokedToken = require('./models/revokedToken')
 const errorHandler = require('./middlewares/errorHandler')
 const notFound = require('./middlewares/notFound')
 
@@ -26,6 +27,7 @@ class Server {
         console.log('Base de datos conectada exitosamente.')
 
         await User.sync()
+        await RevokedToken.sync()
         console.log('Modelos sincronizados con la base de datos.')
     }
 

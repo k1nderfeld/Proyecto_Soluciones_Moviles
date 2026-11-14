@@ -2,6 +2,7 @@ const crypto = require('crypto')
 const bcrypt = require('bcryptjs')
 const { Op } = require('sequelize')
 const User = require('../models/user')
+const RevokedToken = require('../models/revokedToken')
 const HttpError = require('../utils/HttpError')
 const tokenService = require('./token.service')
 const mailer = require('./mailer.service')
@@ -385,6 +386,20 @@ class AuthService {
         user.lockedUntil = null
 
         await user.save()
+    }
+
+    async logout(tokenPayload) {
+        if (tokenPayload.jti) {
+            await RevokedToken.findOrCreate({
+                where: { jti: tokenPayload.jti },
+                defaults: {
+                    jti: tokenPayload.jti,
+                    expiresAt: new Date(tokenPayload.exp * 1000)
+                }
+            })
+        }
+
+        await RevokedToken.destroy({ where: { expiresAt: { [Op.lt]: new Date() } } })
     }
 
     createGuest() {

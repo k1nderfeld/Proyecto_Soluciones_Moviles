@@ -15,7 +15,8 @@ const {
     createGuest,
     login,
     loginTwoFactor,
-    me
+    me,
+    logout
 } = require('../controllers/auth.controller')
 
 const router = Router()
@@ -178,5 +179,7 @@ router.post('/login/2fa', [
 ])
 
 router.get('/me', authenticate, me)
+
+router.post('/logout', authenticate, logout)
 
 module.exports = router

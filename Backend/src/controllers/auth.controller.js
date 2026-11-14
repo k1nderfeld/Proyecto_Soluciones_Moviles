@@ -148,6 +148,15 @@ const createGuest = asyncHandler(async (req, res) => {
     })
 })
 
+const logout = asyncHandler(async (req, res) => {
+    await authService.logout(req.token)
+
+    return res.status(200).json({
+        success: true,
+        message: 'Sesión cerrada correctamente.'
+    })
+})
+
 module.exports = {
     register,
     verifyEmail,
@@ -161,5 +170,6 @@ module.exports = {
     createGuest,
     login,
     loginTwoFactor,
-    me
+    me,
+    logout
 }
