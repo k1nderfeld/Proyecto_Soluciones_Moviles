@@ -157,6 +157,35 @@ const logout = asyncHandler(async (req, res) => {
     })
 })
 
+const forgotPassword = asyncHandler(async (req, res) => {
+    await authService.requestPasswordReset(req.body)
+
+    return res.status(200).json({
+        success: true,
+        message: 'Si el correo pertenece a una cuenta verificada, enviamos un enlace para restablecer la contraseña.'
+    })
+})
+
+const resetPassword = asyncHandler(async (req, res) => {
+    const user = await authService.resetPassword(req.body)
+
+    return res.status(200).json({
+        success: true,
+        message: 'Tu contraseña fue actualizada.',
+        data: { user }
+    })
+})
+
+const changePassword = asyncHandler(async (req, res) => {
+    const data = await authService.changePassword(req.user, req.body)
+
+    return res.status(200).json({
+        success: true,
+        message: 'Tu contraseña fue actualizada.',
+        data
+    })
+})
+
 module.exports = {
     register,
     verifyEmail,
@@ -171,5 +200,8 @@ module.exports = {
     login,
     loginTwoFactor,
     me,
-    logout
+    logout,
+    forgotPassword,
+    resetPassword,
+    changePassword
 }

@@ -44,6 +44,10 @@ const authenticate = async (req, res, next) => {
             throw new HttpError(401, 'Tu sesión es inválida o expiró')
         }
 
+        if ((payload.ver || 0) !== (user.tokenVersion || 0)) {
+            throw new HttpError(401, 'Tu sesión es inválida o expiró')
+        }
+
         req.user = user
         req.guest = false
 

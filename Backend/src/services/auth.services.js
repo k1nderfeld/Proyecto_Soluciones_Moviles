@@ -14,6 +14,7 @@ const CODE_TTL_MS = 10 * 60 * 1000
 const MAX_LOGIN_ATTEMPTS = 5
 const LOCK_DURATION_MS = 15 * 60 * 1000
 const TWO_FACTOR_CHALLENGE_TTL = '5m'
+const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000
 const DUMMY_PASSWORD_HASH = bcrypt.hashSync('voybus-dummy-password', 10)
 
 class AuthService {
@@ -402,6 +403,76 @@ class AuthService {
         await RevokedToken.destroy({ where: { expiresAt: { [Op.lt]: new Date() } } })
     }
 
+    async requestPasswordReset({ email }) {
+        const user = await User.findOne({ where: { email: email.trim().toLowerCase() } })
+
+        if (!user || !user.password || !user.emailVerified || user.status === 'disabled') {
+            return
+        }
+
+        user.passwordResetToken = crypto.randomBytes(32).toString('hex')
+        user.passwordResetExpiresAt = new Date(Date.now() + PASSWORD_RESET_TTL_MS)
+
+        await user.save()
+        await mailer.sendPasswordResetEmail(user, user.passwordResetToken).catch(() => null)
+    }
+
+    async resetPassword({ token, newPassword }) {
+        const user = await User.findOne({ where: { passwordResetToken: token } })
+
+        if (!user || !user.passwordResetExpiresAt || user.passwordResetExpiresAt.getTime() < Date.now()) {
+            throw new HttpError(400, 'El enlace de recuperación es inválido o expiró')
+        }
+
+        if (user.status === 'disabled') {
+            throw new HttpError(403, 'La cuenta está deshabilitada.')
+        }
+
+        if (await user.verifyPassword(newPassword)) {
+            throw new HttpError(400, 'La nueva contraseña debe ser distinta a la actual')
+        }
+
+        user.password = newPassword
+        user.passwordResetToken = null
+        user.passwordResetExpiresAt = null
+        user.tokenVersion = (user.tokenVersion || 0) + 1
+        user.failedLoginAttempts = 0
+        user.lockedUntil = null
+
+        await user.save()
+
+        return user
+    }
+
+    async changePassword(user, { currentPassword, newPassword }) {
+        if (!user) {
+            throw new HttpError(403, 'Inicia sesión con tu cuenta para cambiar la contraseña')
+        }
+
+        this.ensureNotLocked(user)
+
+        if (!(await user.verifyPassword(currentPassword))) {
+            await this.registerFailedAttempt(user)
+            throw new HttpError(400, 'La contraseña actual es incorrecta')
+        }
+
+        if (await user.verifyPassword(newPassword)) {
+            throw new HttpError(400, 'La nueva contraseña debe ser distinta a la actual')
+        }
+
+        user.password = newPassword
+        user.tokenVersion = (user.tokenVersion || 0) + 1
+        user.failedLoginAttempts = 0
+        user.lockedUntil = null
+
+        await user.save()
+
+        return {
+            user,
+            token: this.signSession(user)
+        }
+    }
+
     createGuest() {
         return {
             token: tokenService.sign({ role: 'invitado' }, '24h')
@@ -409,7 +480,7 @@ class AuthService {
     }
 
     signSession(user) {
-        return tokenService.sign({ sub: user.id, role: user.role })
+        return tokenService.sign({ sub: user.id, role: user.role, ver: user.tokenVersion || 0 })
     }
 
     async authenticateLocal(email, password) {

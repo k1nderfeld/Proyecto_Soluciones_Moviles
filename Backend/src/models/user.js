@@ -138,6 +138,22 @@ User.init({
     lockedUntil: {
         type: DataTypes.DATE,
         allowNull: true
+    },
+
+    passwordResetToken: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+
+    passwordResetExpiresAt: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+
+    tokenVersion: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0
     }
 }, {
     sequelize: db,
@@ -169,6 +185,9 @@ User.prototype.toJSON = function () {
     delete values.phoneVerificationExpiresAt
     delete values.failedLoginAttempts
     delete values.lockedUntil
+    delete values.passwordResetToken
+    delete values.passwordResetExpiresAt
+    delete values.tokenVersion
     return values
 }
 

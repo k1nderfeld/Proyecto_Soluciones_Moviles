@@ -16,7 +16,10 @@ const {
     login,
     loginTwoFactor,
     me,
-    logout
+    logout,
+    forgotPassword,
+    resetPassword,
+    changePassword
 } = require('../controllers/auth.controller')
 
 const router = Router()
@@ -181,5 +184,40 @@ router.post('/login/2fa', [
 router.get('/me', authenticate, me)
 
 router.post('/logout', authenticate, logout)
+
+router.post('/password/forgot', [
+    body('email')
+        .trim()
+        .notEmpty().withMessage('El correo es obligatorio')
+        .toLowerCase()
+        .isEmail().withMessage('El formato de correo ingresado es inválido'),
+    validateFields,
+    forgotPassword
+])
+
+router.post('/password/reset', [
+    body('token')
+        .trim()
+        .notEmpty().withMessage('El token es obligatorio'),
+    ...passwordRules('newPassword'),
+    body('confirmPassword')
+        .notEmpty().withMessage('Debes confirmar la contraseña')
+        .custom((value, { req }) => value === req.body.newPassword)
+        .withMessage('Las contraseñas no coinciden'),
+    validateFields,
+    resetPassword
+])
+
+router.post('/password/change', authenticate, [
+    body('currentPassword')
+        .notEmpty().withMessage('La contraseña actual es obligatoria'),
+    ...passwordRules('newPassword'),
+    body('confirmPassword')
+        .notEmpty().withMessage('Debes confirmar la contraseña')
+        .custom((value, { req }) => value === req.body.newPassword)
+        .withMessage('Las contraseñas no coinciden'),
+    validateFields,
+    changePassword
+])
 
 module.exports = router

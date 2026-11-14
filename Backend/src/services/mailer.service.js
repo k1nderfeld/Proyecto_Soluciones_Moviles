@@ -25,4 +25,17 @@ const sendVerificationEmail = async (user, token) => {
     })
 }
 
-module.exports = { sendVerificationEmail }
+const sendPasswordResetEmail = async (user, token) => {
+    const appUrl = process.env.APP_URL || 'http://localhost:3000'
+    const link = `${appUrl}/restablecer-contrasena?token=${token}`
+
+    return transport.sendMail({
+        from: process.env.MAIL_FROM || 'VoyBus <no-reply@voybus.app>',
+        to: user.email,
+        subject: 'Recupera tu contraseña de VoyBus',
+        text: `Hola ${user.name}. Restablece tu contraseña ingresando a ${link}. El enlace vence en una hora.`,
+        html: `<p>Hola ${user.name}.</p><p>Recibimos una solicitud para restablecer tu contraseña de VoyBus.</p><p><a href="${link}">Restablecer mi contraseña</a></p><p>Si no fuiste tú, ignora este mensaje. El enlace vence en una hora.</p>`
+    })
+}
+
+module.exports = { sendVerificationEmail, sendPasswordResetEmail }
