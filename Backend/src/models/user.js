@@ -127,6 +127,17 @@ User.init({
     twoFactorSecret: {
         type: DataTypes.STRING,
         allowNull: true
+    },
+
+    failedLoginAttempts: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0
+    },
+
+    lockedUntil: {
+        type: DataTypes.DATE,
+        allowNull: true
     }
 }, {
     sequelize: db,
@@ -156,6 +167,8 @@ User.prototype.toJSON = function () {
     delete values.emailVerificationExpiresAt
     delete values.phoneVerificationCode
     delete values.phoneVerificationExpiresAt
+    delete values.failedLoginAttempts
+    delete values.lockedUntil
     return values
 }
 

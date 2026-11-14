@@ -77,22 +77,64 @@ const disableTwoFactor = asyncHandler(async (req, res) => {
 })
 
 const registerWithGoogle = asyncHandler(async (req, res) => {
-    const { user, token } = await authService.registerWithGoogle(req.body)
+    const data = await authService.registerWithGoogle(req.body)
 
     return res.status(200).json({
         success: true,
-        message: 'Cuenta de pasajero lista.',
-        data: { user, token }
+        message: data.twoFactorRequired
+            ? 'Ingresa el código de tu aplicación autenticadora para continuar.'
+            : 'Cuenta de pasajero lista.',
+        data
     })
 })
 
 const registerWithApple = asyncHandler(async (req, res) => {
-    const { user, token } = await authService.registerWithApple(req.body)
+    const data = await authService.registerWithApple(req.body)
 
     return res.status(200).json({
         success: true,
-        message: 'Cuenta de pasajero lista.',
-        data: { user, token }
+        message: data.twoFactorRequired
+            ? 'Ingresa el código de tu aplicación autenticadora para continuar.'
+            : 'Cuenta de pasajero lista.',
+        data
+    })
+})
+
+const login = asyncHandler(async (req, res) => {
+    const data = await authService.login(req.body)
+
+    return res.status(200).json({
+        success: true,
+        message: data.twoFactorRequired
+            ? 'Ingresa el código de tu aplicación autenticadora para continuar.'
+            : 'Sesión iniciada correctamente.',
+        data
+    })
+})
+
+const loginTwoFactor = asyncHandler(async (req, res) => {
+    const data = await authService.loginTwoFactor(req.body)
+
+    return res.status(200).json({
+        success: true,
+        message: 'Sesión iniciada correctamente.',
+        data
+    })
+})
+
+const me = asyncHandler(async (req, res) => {
+    if (req.guest) {
+        return res.status(200).json({
+            success: true,
+            message: 'Sesión de invitado.',
+            data: { guest: true, role: 'invitado' }
+        })
+    }
+
+    return res.status(200).json({
+        success: true,
+        message: 'Sesión activa.',
+        data: { user: req.user }
     })
 })
 
@@ -116,5 +158,8 @@ module.exports = {
     disableTwoFactor,
     registerWithGoogle,
     registerWithApple,
-    createGuest
+    createGuest,
+    login,
+    loginTwoFactor,
+    me
 }

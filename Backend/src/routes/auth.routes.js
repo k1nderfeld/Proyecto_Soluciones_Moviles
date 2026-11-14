@@ -1,6 +1,7 @@
 const { Router } = require('express')
 const { body } = require('express-validator')
 const validateFields = require('../middlewares/validateFields')
+const authenticate = require('../middlewares/authenticate')
 const {
     register,
     verifyEmail,
@@ -11,7 +12,10 @@ const {
     disableTwoFactor,
     registerWithGoogle,
     registerWithApple,
-    createGuest
+    createGuest,
+    login,
+    loginTwoFactor,
+    me
 } = require('../controllers/auth.controller')
 
 const router = Router()
@@ -153,5 +157,26 @@ router.post('/apple', [
 ])
 
 router.post('/guest', createGuest)
+
+router.post('/login', [
+    body('identifier')
+        .trim()
+        .notEmpty().withMessage('El correo o el teléfono es obligatorio'),
+    body('password')
+        .notEmpty().withMessage('La contraseña es obligatoria'),
+    validateFields,
+    login
+])
+
+router.post('/login/2fa', [
+    body('challengeToken')
+        .trim()
+        .notEmpty().withMessage('El desafío de verificación es obligatorio'),
+    codeRule,
+    validateFields,
+    loginTwoFactor
+])
+
+router.get('/me', authenticate, me)
 
 module.exports = router
