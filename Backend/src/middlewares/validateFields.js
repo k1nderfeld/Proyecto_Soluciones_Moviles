@@ -6,8 +6,8 @@ const validateFields = (req, res, next) => {
     if (!errors.isEmpty()) { // si la lista de errores no esta vacía
         return res.status(400).json({
             success: false,
-            message: "Error en el formato de los datos",
-            errors: errors.array().map((e) => ({ // recorre cada error de la lista
+            message: "Los datos ingresados son incorrectos",
+            errors: errors.array({ onlyFirstError: true }).map((e) => ({ // recorre cada error de la lista ; un error por campo
                 field: e.path, // nombre del campo que fallo
                 message: e.msg // mensaje de error
             }))

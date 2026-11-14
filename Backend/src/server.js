@@ -1,52 +1,51 @@
-const express = require("express")
-const morgan = require("morgan")
-const cors = require("cors")
-require("dotenv").config
+const express = require('express')
+const morgan = require('morgan')
+const cors = require('cors')
+require('dotenv').config()
 
 const db = require('./config/database')
+const User = require('./models/user')
+const errorHandler = require('./middlewares/errorHandler')
+const notFound = require('./middlewares/notFound')
 
 class Server {
     constructor() {
         this.app = express()
         this.port = process.env.PORT || 3000
-        this.server = require("http").createServer(this.app)
 
         this.paths = {
-            user: 'api/user'
+            auth: '/api/auth'
         }
 
-        this.connectDatabase()
-
-        this.app.use(express.json())
-
         this.middlewares()
-
         this.routes()
     }
 
     async connectDatabase() {
-        await db.authenticate().then(() => {
-            console.log("Base de datos conectada exitosamente.")
-        }).catch((err) => {
-            console.error("No se pudo establecer conexión con la base de datos", err)
-        })
+        await db.authenticate()
+        console.log('Base de datos conectada exitosamente.')
 
-        // carga de modelos a la base de datos
-        await User.sync({ force: false })
+        await User.sync()
+        console.log('Modelos sincronizados con la base de datos.')
     }
 
     middlewares() {
         this.app.use(morgan('dev'))
         this.app.use(cors())
+        this.app.use(express.json())
     }
 
     routes() {
-        this.app.use(this.paths.user, require('./routes/user.route'))
+        this.app.use(this.paths.auth, require('./routes/auth.routes'))
+        this.app.use(notFound)
+        this.app.use(errorHandler)
     }
 
-    listen() {
+    async listen() {
+        await this.connectDatabase()
+
         this.app.listen(this.port, () => {
-            console.log(`El servidor se esta ejecutando en la url: http://localhost:${this.PORT}`)
+            console.log(`El servidor se esta ejecutando en la url: http://localhost:${this.port}`)
         })
     }
 }
