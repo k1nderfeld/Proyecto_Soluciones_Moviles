@@ -1,46 +1,31 @@
 {
-  "name": "proyecto_soluciones_moviles",
+  "name": "backend_clases",
   "version": "1.0.0",
-  "description": "Aplicación móvil para gestionar servicios del transporte",
-  "homepage": "https://github.com/k1nderfeld/proyecto_soluciones_moviles#readme",
-  "bugs": {
-    "url": "https://github.com/k1nderfeld/proyecto_soluciones_moviles/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/k1nderfeld/proyecto_soluciones_moviles.git"
-  },
-  "license": "ISC",
-  "author": "Baltazar Rodríguez & Daniel Díaz",
-  "type": "commonjs",
-  "main": "./src/app.js",
+  "description": "Backend de una app para el reconocimiento de rocas.",
+  "main": "./src/server.js",
   "scripts": {
     "dev": "nodemon",
-    "start": "node src/app.js",
-    "migrate": "npx sequelize-cli db:migrate"
+    "start": "node src/server.js",
+    "migrate": "node src/database/initialize.js",
+    "test": "node --test test/*.test.js"
   },
+  "author": "Jose Benitez",
+  "license": "ISC",
   "dependencies": {
-    "@auth/express": "^0.12.3",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
-    "dotenv": "^18.0.3",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-validator": "^7.3.2",
-    "google-auth-library": "^11.3.4",
     "jsonwebtoken": "^9.0.3",
-    "jwks-rsa": "^4.1.0",
-    "nodemailer": "^8.0.11",
     "nodemon": "^3.1.14",
-    "otplib": "^13.6.0",
-    "qrcode": "^1.5.4",
     "sequelize": "^6.37.8",
     "sequelize-cli": "^6.6.5",
-    "sqlite3": "^6.0.1"
+    "sqlite3": "^6.0.1",
+    "morgan": "^1.12.0"
   },
-  "devDependencies": {
-    "morgan": "^1.12.1"
-  },
-  "allowScripts": {
-    "sqlite3@6.0.1": true
+  "devDependencies": {},
+  "engines": {
+    "node": ">=22"
   }
 }

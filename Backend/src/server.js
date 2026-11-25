@@ -1,55 +1,29 @@
-const express = require('express')
-const morgan = require('morgan')
-const cors = require('cors')
 require('dotenv').config()
+const { createApp } = require('./app')
+const models = require('./models')
+const { sequelize } = models
+const { seedDemoData } = require('./database/seedDemoData')
+const { seedAdminUser } = require('./database/seedAdmin')
+const { jwtSecret } = require('./config/auth')
+const PORT = process.env.PORT || 8080
 
-const db = require('./config/database')
-const User = require('./models/user')
-const RevokedToken = require('./models/revokedToken')
-const errorHandler = require('./middlewares/errorHandler')
-const notFound = require('./middlewares/notFound')
-
-class Server {
-    constructor() {
-        this.app = express()
-        this.port = process.env.PORT || 3000
-
-        this.paths = {
-            auth: '/api/auth'
-        }
-
-        this.middlewares()
-        this.routes()
-    }
-
-    async connectDatabase() {
-        await db.authenticate()
-        console.log('Base de datos conectada exitosamente.')
-
-        await User.sync()
-        await RevokedToken.sync()
-        console.log('Modelos sincronizados con la base de datos.')
-    }
-
-    middlewares() {
-        this.app.use(morgan('dev'))
-        this.app.use(cors())
-        this.app.use(express.json())
-    }
-
-    routes() {
-        this.app.use(this.paths.auth, require('./routes/auth.routes'))
-        this.app.use(notFound)
-        this.app.use(errorHandler)
-    }
-
-    async listen() {
-        await this.connectDatabase()
-
-        this.app.listen(this.port, () => {
-            console.log(`El servidor se esta ejecutando en la url: http://localhost:${this.port}`)
-        })
-    }
+// Reference data first (the Admin role must exist), then the administrator account.
+const seedAll = async modelSet => {
+  await seedDemoData(modelSet)
+  await seedAdminUser(modelSet)
 }
 
-module.exports = Server
+const start = async ({ database = sequelize, modelSet = models, seed = seedAll, appFactory = createApp, port = PORT, logger = console } = {}) => {
+  try {
+    jwtSecret()
+    await database.authenticate()
+    await database.sync()
+    await seed(modelSet)
+    return appFactory().listen(port, () => logger.log(`API disponible en http://localhost:${port}`))
+  } catch (error) {
+    logger.error('No se pudo iniciar la API, preparar la base de datos o cargar los datos de demostracion.', error)
+    throw error
+  }
+}
+if (require.main === module) start().catch(() => { process.exitCode = 1 })
+module.exports = { start }

@@ -1,0 +1,37 @@
+const { Router } = require('express')
+const models = require('../models')
+const validateToken = require('../middlewares/validateToken')
+const { createResolveActor } = require('../middlewares/resolveActor')
+const { adminOnly, authenticated } = require('../middlewares/guards')
+const { guestSessions } = require('./recognition.route')
+const { createProgressService } = require('../services/progressService')
+const { createFeedbackService } = require('../services/feedbackService')
+const { createGuestMigrationService } = require('../services/guestMigrationService')
+const { createAchievementService } = require('../services/achievementService')
+const { createCollectionService } = require('../services/collectionService')
+const { createAdminService } = require('../services/adminService')
+const { createPlatformController } = require('../controllers/platform.controller')
+
+const progress = createProgressService({ models })
+const collections = createCollectionService({ models })
+const controller = createPlatformController({ progress,
+  feedback: createFeedbackService({ models }),
+  migration: createGuestMigrationService({ models, achievements: createAchievementService({ models }) }),
+  admin: createAdminService({ models, collections, progress })
+})
+const router = Router()
+const userOrGuest = [validateToken.optional, createResolveActor(guestSessions)]
+router.get('/progress/me', ...userOrGuest, controller.stats)
+router.get('/progress/me/history', ...userOrGuest, controller.history)
+router.get('/achievement/me', ...userOrGuest, controller.achievements)
+router.post('/recognition/:id/feedback', ...authenticated, controller.createFeedback)
+router.get('/recognition/:id/feedback', ...authenticated, controller.getFeedback)
+router.patch('/recognition/:id/feedback', ...authenticated, controller.updateFeedback)
+router.post('/guest/migrate', ...authenticated, controller.migrate)
+router.get('/admin/stats', ...adminOnly, controller.adminStats)
+router.get('/admin/recognitions', ...adminOnly, controller.adminHistory)
+router.get('/admin/feedback', ...adminOnly, controller.adminFeedback)
+router.patch('/admin/users/:id', ...adminOnly, controller.updateUser)
+router.get('/admin/users/:id/collection', ...adminOnly, controller.userCollection)
+router.get('/admin/users/:id/achievements', ...adminOnly, controller.userAchievements)
+module.exports = router
